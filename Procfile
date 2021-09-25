@@ -1,1 +1,1 @@
-worker: bin/discordtyping.go
+worker: bin/discordtyping
