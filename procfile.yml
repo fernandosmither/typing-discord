@@ -1,0 +1,2 @@
+run:
+  worker: go run discordtyping.go
