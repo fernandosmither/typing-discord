@@ -1,16 +1,19 @@
 package main
+
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
 	"github.com/bwmarrin/discordgo"
-	"fmt"
 
 	"net/http"
+
+	_ "net/http/pprof"
 )
-import _ "net/http/pprof"
 
 // Discord Bot token
 var Token string
@@ -22,8 +25,8 @@ var AuthenticationToken string
 
 // General bot settings (READ ONLY)
 var Settings struct {
-	BotAsUser 		*discordgo.User // Bot account
-	isBotAccount	bool
+	BotAsUser    *discordgo.User // Bot account
+	isBotAccount bool
 }
 var KnownUsers map[string]*discordgo.User
 
@@ -43,12 +46,13 @@ func init() {
 
 func main() {
 	// Make sure we start with a token supplied or email
-	if len(Token) == 0 && (len(Email) == 0 || len(Password) == 0) {
-		flag.Usage()
-		fmt.Println("Provide bot token OR email/password")
-		return
-	}
-	var session *discordgo.Session 
+	// if len(Token) == 0 && (len(Email) == 0 || len(Password) == 0) {
+	// 	flag.Usage()
+	// 	fmt.Println("Provide bot token OR email/password")
+	// 	return
+	// }
+	Token := os.Getenv("DISCORD_TOKEN")
+	var session *discordgo.Session
 	var err error
 
 	// Initiate a new session using Bot Token or useremail/password for authentication
@@ -59,10 +63,10 @@ func main() {
 		Settings.isBotAccount = true
 	} else if len(AuthenticationToken) == 0 {
 		fmt.Println("Using email/password authentication")
-		session, err = discordgo.New(Email,Password)
+		session, err = discordgo.New(Email, Password)
 	} else {
 		fmt.Println("Using email/password/auth token authentication")
-		session, err = discordgo.New(Email,Password,AuthenticationToken)
+		session, err = discordgo.New(Email, Password, AuthenticationToken)
 	}
 
 	if err != nil {
@@ -106,17 +110,17 @@ func typingStarted(s *discordgo.Session, ts *discordgo.TypingStart) {
 }
 
 func knownUser(s *discordgo.Session, uid string) *discordgo.User {
-    aUser, known := KnownUsers[uid]
-    if known {
-        return aUser
-    } else {
-        aUser,err := s.User(uid)
+	aUser, known := KnownUsers[uid]
+	if known {
+		return aUser
+	} else {
+		aUser, err := s.User(uid)
 		if err != nil {
-			log.Fatalln("ERROR, Couldn't get user: " + uid, err)
+			log.Fatalln("ERROR, Couldn't get user: "+uid, err)
 		}
 		KnownUsers[uid] = aUser
 		return aUser
-    }
+	}
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
